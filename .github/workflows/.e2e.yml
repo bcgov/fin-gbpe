@@ -15,7 +15,7 @@ on:
         description: "Frontend URL of the application"
         required: true
         type: string
-      external-api-base-url:
+      external-api-base-url :
         description: "Base URL to the external service API"
         required: true
         type: string
