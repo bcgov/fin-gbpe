@@ -8,8 +8,6 @@ on:
         required: true
       E2E_PASSWORD:
         required: true
-      EXTERNAL_CONSUMER_DELETE_REPORTS_API_KEY:
-        required: true
     inputs:
       frontend-url:
         description: "Frontend URL of the application"
@@ -34,6 +32,8 @@ on:
       E2E_USERNAME:
         required: true
       E2E_PASSWORD:
+        required: true
+      EXTERNAL_CONSUMER_DELETE_REPORTS_API_KEY:
         required: true
     inputs:
       frontend-url:
