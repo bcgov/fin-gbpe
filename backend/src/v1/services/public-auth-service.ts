@@ -243,16 +243,19 @@ class PublicAuth extends AuthBase {
     try {
       const details = await getCompanyDetails(userGuid);
 
-      if (
-        !details.legalName ||
-        !details.addressLine1 ||
-        !details.city ||
-        !details.province ||
-        !details.country ||
-        !details.postal
-      ) {
+      const missingFields = [];
+      if (!details.legalName) missingFields.push('legalName');
+      if (!details.addressLine1) missingFields.push('addressLine1');
+      if (!details.city) missingFields.push('city');
+      if (!details.province) missingFields.push('province');
+      if (!details.country) missingFields.push('country');
+      if (!details.postal) missingFields.push('postal');
+
+      const hasMissingFields = missingFields.length > 0;
+
+      if (hasMissingFields) {
         log.error(
-          `Required company details missing from BCEID for user ${userGuid}`,
+          `Required company details missing from BCEID for user ${userGuid}. The following fields are missing: ${missingFields.join()}`,
         );
         return LogoutReason.ContactError;
       }
