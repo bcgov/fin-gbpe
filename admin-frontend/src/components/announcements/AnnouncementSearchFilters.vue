@@ -1,6 +1,6 @@
 <template>
   <div class="primary-filters">
-    <v-row class="mt-0 w-100 mb-3">
+    <v-row class="mt-0 w-100 mb-3 mr-1">
       <v-col cols="12" md="8" lg="6" xl="4" class="d-flex align-center">
         <v-text-field
           v-model="searchText"
@@ -25,7 +25,7 @@
         md="4"
         lg="6"
         xl="8"
-        class="d-flex justify-end align-center pe-3"
+        class="d-flex justify-end align-center pe-1"
       >
         <v-btn
           class="btn-secondary me-2"

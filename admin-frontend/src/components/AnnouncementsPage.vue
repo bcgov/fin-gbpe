@@ -6,7 +6,11 @@
   </v-row>
 
   <div class="search-results w-100">
+<<<<<<< Updated upstream
     <div class="d-flex flex-wrap">
+=======
+    <div class="d-flex flex-wrap mb-4 align-center">
+>>>>>>> Stashed changes
       <h4 v-if="searchResults?.length" class="">
         Displaying {{ searchResults.length }} announcement<span
           v-if="searchResults.length != 1"

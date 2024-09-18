@@ -2,13 +2,13 @@
   <h4>Search Reports</h4>
 
   <v-row dense class="mt-0 w-100 mb-4">
-    <v-col class="py-0">
+    <v-col class="py-0 pr-3">
       <ReportSearchFilters />
     </v-col>
   </v-row>
 
   <div class="search-results w-100">
-    <v-row class="mt-0 w-100" no-gutters>
+    <v-row class="mt-0 w-100 mb-3" no-gutters>
       <v-col sm="8" md="8" lg="6" xl="4" class="d-flex align-center">
         <h4 v-if="searchResults?.length">
           Displaying {{ searchResults.length }} report<span
