@@ -460,6 +460,8 @@ export const announcementService = {
         data,
       });
     });
+
+    return this.getAnnouncementById(id);
   },
 
   /* Identifies announcements that should be expired.  If any such announcements

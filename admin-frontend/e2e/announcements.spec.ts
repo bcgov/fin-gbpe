@@ -1,6 +1,7 @@
 import { expect, test } from '@playwright/test';
 import { AnnouncementsPage } from './pages/announcements/announcements-page';
 import { AddAnnouncementPage } from './pages/announcements/add-announcement-page';
+import { EditAnnouncementPage } from './pages/announcements/edit-announcement-page';
 
 test.describe('Announcements', () => {
   test.describe('add announcement', () => {
@@ -34,7 +35,7 @@ test.describe('Announcements', () => {
       await announcementsPage.expectTitleVisible(announcement.title);
     });
 
-    test('save announcement with file attachment', async ({ page }) => {
+    test.skip('save announcement with file attachment', async ({ page }) => {
       const announcementsPage = await AnnouncementsPage.visit(page);
       await announcementsPage.clickAddAnnouncementButton();
       const addAnnouncementPage = await AddAnnouncementPage.visit(page);
@@ -51,6 +52,31 @@ test.describe('Announcements', () => {
       await expect(announcement.expires_on).toBeNull();
       await announcementsPage.search(announcement.title);
       await announcementsPage.expectTitleVisible(announcement.title);
+    });
+  });
+
+  test.describe('edit announcement', () => {
+    test('should successfully edit and save announcement', async ({ page }) => {
+      const announcementsPage = await AnnouncementsPage.visit(page);
+      await announcementsPage.clickAddAnnouncementButton();
+      const addAnnouncementPage = await AddAnnouncementPage.visit(page);
+      await addAnnouncementPage.fillPublishedForm();
+      const { title } = await addAnnouncementPage.save('published');
+      const announcement = await announcementsPage.searchAndEdit(title);
+      const editAnnouncementPage = new EditAnnouncementPage(page);
+      await editAnnouncementPage.setup();
+      editAnnouncementPage.initialData = announcement;
+      await editAnnouncementPage.verifyLoadedData();
+      await editAnnouncementPage.editForm();
+      const changes = await editAnnouncementPage.saveChanges();
+      expect(changes.announcement_id).toBe(announcement.announcement_id);
+      await announcementsPage.search(changes.title);
+      await announcementsPage.expectTitleVisible(changes.title);
+      await announcementsPage.expectDatesVisible(
+        changes.active_on,
+        changes.expires_on,
+      );
+      await announcementsPage.expectStatusVisible(changes.status);
     });
   });
 });

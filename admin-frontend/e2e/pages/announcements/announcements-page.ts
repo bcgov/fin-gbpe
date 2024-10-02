@@ -1,6 +1,8 @@
 import { expect, Locator, Page } from 'playwright/test';
 import { PagePaths } from '../../utils';
 import { AdminPortalPage } from '../admin-portal-page';
+import { DateTimeFormatter, ZonedDateTime, ZoneId } from '@js-joda/core';
+import { Locale } from '@js-joda/locale_en';
 
 export class AnnouncementsPage extends AdminPortalPage {
   static path = PagePaths.ANNOUNCEMENTS;
@@ -37,12 +39,49 @@ export class AnnouncementsPage extends AdminPortalPage {
     await expect(titleElement).toBeVisible();
   }
 
+  async expectStatusVisible(status: string) {
+    const statusElement = await this.page.getByText(status);
+    await expect(statusElement).toBeVisible();
+  }
+
+  async expectDatesVisible(activeOn: string, expiresOn: string) {
+    if (activeOn) {
+      const activeOnElement = await this.page.getByText(
+        this.formatDate(activeOn),
+      );
+      await expect(activeOnElement).toBeVisible();
+    }
+
+    if (expiresOn) {
+      const expiresOnElement = await this.page.getByText(
+        this.formatDate(expiresOn),
+      );
+      await expect(expiresOnElement).toBeVisible();
+    }
+  }
+
   async search(title: string) {
     await this.searchInput.fill(title);
     const searchResponse = this.waitForSearch();
     await this.searchButton.click();
     const response = await searchResponse;
     return response.json();
+  }
+
+  async searchAndEdit(title: string) {
+    const { items } = await this.search(title);
+    await this.expectTitleVisible(title);
+    const actions = await this.page.getByRole('button', { name: 'Actions' });
+    await actions.click();
+    const getAnnouncementResponse = this.waitForGetAnnouncement(
+      items[0].announcement_id,
+    );
+    const editButton = await this.page.getByRole('button', { name: 'Edit' });
+    await editButton.click();
+    const response = await getAnnouncementResponse;
+    await response.json();
+    await this.page.waitForURL(PagePaths.EDIT_ANNOUNCEMENTS);
+    return items[0];
   }
 
   private async waitForSearch() {
@@ -55,5 +94,39 @@ export class AnnouncementsPage extends AdminPortalPage {
     });
 
     return searchResponse;
+  }
+
+  private async waitForGetAnnouncement(id: string) {
+    console.log(`/admin-api/v1/announcements/${id}`);
+    const getAnnouncementResponse = this.page.waitForResponse((res) => {
+      return (
+        res.status() === 200 &&
+        res.url().includes(`/admin-api/v1/announcements/${id}`) &&
+        res.request().method() === 'GET'
+      );
+    });
+
+    return getAnnouncementResponse;
+  }
+
+  private formatDate(
+    inDateStr: string,
+    inFormatter = DateTimeFormatter.ISO_DATE_TIME,
+    outFormatter = DateTimeFormatter.ofPattern('MMM d, yyyy').withLocale(
+      Locale.CANADA,
+    ),
+  ) {
+    const date = ZonedDateTime.parse(inDateStr, inFormatter);
+    const localTz = ZoneId.systemDefault();
+    const dateInLocalTz = date.withZoneSameInstant(localTz);
+    return outFormatter.format(dateInLocalTz);
+  }
+
+  formatIsoDateTimeAsLocalTime(inDateStr: string) {
+    return this.formatDate(
+      inDateStr,
+      DateTimeFormatter.ISO_DATE_TIME,
+      DateTimeFormatter.ofPattern('h:mm a').withLocale(Locale.CANADA),
+    );
   }
 }

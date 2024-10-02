@@ -11,7 +11,7 @@ export class AddAnnouncementPage extends FormPage {
   }
 
   static async visit(page) {
-    await page.goto(PagePaths.ADD_ANNOUNCEMENTS);
+    await page.goto(AddAnnouncementPage.path);
     const addAnnouncementPage = new AddAnnouncementPage(page);
     await addAnnouncementPage.setup();
     return addAnnouncementPage;

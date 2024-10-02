@@ -46,22 +46,20 @@ export class FormPage extends AdminPortalPage {
     await expect(this.titleInput).toBeVisible();
     await expect(this.descriptionInput).toBeVisible();
     await expect(this.cancelButton).toBeVisible();
-    await expect(this.draftOption).toBeVisible();
-    await expect(this.publishedOption).toBeVisible();
     await expect(this.saveButton).toBeVisible();
     await expect(this.activeOnInput).toBeVisible();
     await expect(this.expiresOnInput).toBeVisible();
-    await expect(this.linkUrlInput).toBeVisible();
-    await expect(this.linkTextInput).toBeVisible();
-    await expect(this.chooseFileButton).toBeVisible();
-    await expect(this.fileDisplayNameInput).toBeVisible();
   }
 
   async selectDraftOption() {
+    await expect(this.draftOption).toBeVisible();
+
     await this.draftOption.click();
   }
 
   async selectPublishedOption() {
+    await expect(this.publishedOption).toBeVisible();
+
     await this.publishedOption.click();
   }
 
@@ -74,10 +72,12 @@ export class FormPage extends AdminPortalPage {
   }
 
   async fillLinkUrl(url: string) {
+    await expect(this.linkUrlInput).toBeVisible();
     await this.linkUrlInput.fill(url);
   }
 
   async fillLinkTextInput(text: string) {
+    await expect(this.linkTextInput).toBeVisible();
     await this.linkTextInput.fill(text);
   }
 
@@ -118,6 +118,7 @@ export class FormPage extends AdminPortalPage {
   }
 
   async fillFileDisplayName(displayName: string) {
+    await expect(this.fileDisplayNameInput).toBeVisible();
     await this.fileDisplayNameInput.fill(displayName);
   }
 
@@ -140,10 +141,11 @@ export class FormPage extends AdminPortalPage {
   }
 
   async chooseFile(valid: boolean = true) {
+    await this.fillFileDisplayName(faker.lorem.word(1));
+    await expect(this.chooseFileButton).toBeVisible();
 
-    await this.fileDisplayNameInput.fill(faker.lorem.word(1));
     const fileChooserPromise = this.page.waitForEvent('filechooser');
-    
+
     const scanResponse = this.waitForClamavScan();
     await this.chooseFileButton.click();
     const fileChooser = await fileChooserPromise;
