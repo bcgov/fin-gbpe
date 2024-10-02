@@ -103,7 +103,7 @@ export class AnnouncementsPage extends AdminPortalPage {
     const confirmButton = await this.page.getByRole('button', {
       name: 'Confirm',
     });
-    const archiveAnnouncementResponse = this.waitForDeleteReponse();
+    const archiveAnnouncementResponse = this.waitForPatchReponse();
     const searchResponse = this.waitForSearch();
     await confirmButton.click();
     const response = await archiveAnnouncementResponse;
@@ -112,6 +112,37 @@ export class AnnouncementsPage extends AdminPortalPage {
     await searchResponseJson.json();
     await this.page.waitForURL(PagePaths.ANNOUNCEMENTS);
     await this.expectEmptySearchResults();
+    await this.reset();
+  }
+
+  async unpublishedAnnouncement(title: string) {
+    await this.search(title);
+    await this.expectTitleVisible(title);
+    await this.expectStatusVisible('PUBLISHED');
+    const actions = await (
+      await this.page.getByRole('button', { name: 'Actions' })
+    ).first();
+
+    await actions.click();
+    const unpublishButton = await this.page.getByRole('button', {
+      name: 'Unpublish',
+      disabled: false,
+    });
+    await expect(unpublishButton).toBeVisible();
+    await unpublishButton.click();
+    const confirmButton = await this.page.getByRole('button', {
+      name: 'Confirm',
+    });
+    const archiveAnnouncementResponse = this.waitForPatchReponse();
+    const searchResponse = this.waitForSearch();
+    await confirmButton.click();
+    const response = await archiveAnnouncementResponse;
+    await response.json();
+    const searchResponseJson = await searchResponse;
+    await searchResponseJson.json();
+    await this.page.waitForTimeout(2000);
+    await this.expectTitleVisible(title);
+    await this.expectStatusVisible('DRAFT');
     await this.reset();
   }
 
@@ -155,7 +186,7 @@ export class AnnouncementsPage extends AdminPortalPage {
     return getAnnouncementResponse;
   }
 
-  private async waitForDeleteReponse() {
+  private async waitForPatchReponse() {
     const getAnnouncementResponse = this.page.waitForResponse((res) => {
       return (
         res.status() === 201 &&

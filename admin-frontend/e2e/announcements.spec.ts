@@ -4,7 +4,7 @@ import { AddAnnouncementPage } from './pages/announcements/add-announcement-page
 import { EditAnnouncementPage } from './pages/announcements/edit-announcement-page';
 
 test.describe('Announcements', () => {
-  test.describe.skip('add announcement', () => {
+  test.describe('add announcement', () => {
     test('save as draft', async ({ page }) => {
       const announcementsPage = await AnnouncementsPage.visit(page);
       await announcementsPage.clickAddAnnouncementButton();
@@ -18,6 +18,7 @@ test.describe('Announcements', () => {
       await expect(announcement.expires_on).toBeNull();
       await announcementsPage.search(announcement.title);
       await announcementsPage.expectTitleVisible(announcement.title);
+      await announcementsPage.archiveAnnouncement(announcement.title);
     });
 
     test('save as published', async ({ page }) => {
@@ -33,6 +34,7 @@ test.describe('Announcements', () => {
       await expect(announcement.expires_on).toBeDefined();
       await announcementsPage.search(announcement.title);
       await announcementsPage.expectTitleVisible(announcement.title);
+      await announcementsPage.archiveAnnouncement(announcement.title);
     });
 
     test('save announcement with file attachment', async ({ page }) => {
@@ -52,10 +54,11 @@ test.describe('Announcements', () => {
       await expect(announcement.expires_on).toBeNull();
       await announcementsPage.search(announcement.title);
       await announcementsPage.expectTitleVisible(announcement.title);
+      await announcementsPage.archiveAnnouncement(announcement.title);
     });
   });
 
-  test.describe.skip('edit announcement', () => {
+  test.describe('edit announcement', () => {
     test('should successfully edit and save announcement', async ({ page }) => {
       const announcementsPage = await AnnouncementsPage.visit(page);
       await announcementsPage.clickAddAnnouncementButton();
@@ -77,16 +80,28 @@ test.describe('Announcements', () => {
         changes.expires_on,
       );
       await announcementsPage.expectStatusVisible(changes.status);
+      await announcementsPage.archiveAnnouncement(changes.title);
     });
   });
 
   test.describe('archive announcement', () => {
-    test('should successfully archive announcement', async ({ page }) => {
+    test('should successfully archive an announcement', async ({ page }) => {
       const announcementsPage = await AnnouncementsPage.visit(page);
       await announcementsPage.clickAddAnnouncementButton();
       const addAnnouncementPage = await AddAnnouncementPage.visit(page);
       await addAnnouncementPage.fillPublishedForm();
       const { title } = await addAnnouncementPage.save('published');
+      await announcementsPage.archiveAnnouncement(title);
+    });
+  });
+  test.describe('unpublish announcement', () => {
+    test('should successfully unpublish an announcement', async ({ page }) => {
+      const announcementsPage = await AnnouncementsPage.visit(page);
+      await announcementsPage.clickAddAnnouncementButton();
+      const addAnnouncementPage = await AddAnnouncementPage.visit(page);
+      await addAnnouncementPage.fillPublishedForm();
+      const { title } = await addAnnouncementPage.save('published');
+      await announcementsPage.unpublishedAnnouncement(title);
       await announcementsPage.archiveAnnouncement(title);
     });
   });
