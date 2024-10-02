@@ -9,6 +9,7 @@ export class AnnouncementsPage extends AdminPortalPage {
   addAnnouncementButton: Locator;
   searchInput: Locator;
   searchButton: Locator;
+  resetButton: Locator;
 
   static async visit(page: Page) {
     await page.goto(PagePaths.ANNOUNCEMENTS);
@@ -24,9 +25,11 @@ export class AnnouncementsPage extends AdminPortalPage {
     });
     this.searchInput = await this.page.getByLabel('Search by title');
     this.searchButton = await this.page.getByRole('button', { name: 'Search' });
+    this.resetButton = await this.page.getByRole('button', { name: 'Reset' });
     await expect(this.searchInput).toBeVisible();
     await expect(this.searchButton).toBeVisible();
     await expect(this.addAnnouncementButton).toBeVisible();
+    await expect(this.resetButton).toBeVisible();
   }
 
   async clickAddAnnouncementButton() {
@@ -84,6 +87,50 @@ export class AnnouncementsPage extends AdminPortalPage {
     return items[0];
   }
 
+  async archiveAnnouncement(title: string) {
+    await this.search(title);
+    await this.expectTitleVisible(title);
+    const actions = await (
+      await this.page.getByRole('button', { name: 'Actions' })
+    ).first();
+    await actions.click();
+    const archiveButton = await this.page.getByRole('button', {
+      name: 'Archive',
+      disabled: false,
+    });
+    await expect(archiveButton).toBeVisible();
+    await archiveButton.click();
+    const confirmButton = await this.page.getByRole('button', {
+      name: 'Confirm',
+    });
+    const archiveAnnouncementResponse = this.waitForDeleteReponse();
+    const searchResponse = this.waitForSearch();
+    await confirmButton.click();
+    const response = await archiveAnnouncementResponse;
+    await response.json();
+    const searchResponseJson = await searchResponse;
+    await searchResponseJson.json();
+    await this.page.waitForURL(PagePaths.ANNOUNCEMENTS);
+    await this.expectEmptySearchResults();
+    await this.reset();
+  }
+
+  private async expectEmptySearchResults() {
+    const noResults = await this.page.getByText(
+      'No announcements matched the search criteria',
+    );
+    await expect(noResults).toBeVisible;
+  }
+
+  private async reset() {
+    const searchResponse = this.waitForSearch();
+    await this.resetButton.click();
+    const response = await searchResponse;
+    await response.json();
+    await expect(this.searchInput).toHaveValue('');
+    await this.page.waitForURL(PagePaths.ANNOUNCEMENTS);
+  }
+
   private async waitForSearch() {
     const searchResponse = this.page.waitForResponse((res) => {
       return (
@@ -97,12 +144,23 @@ export class AnnouncementsPage extends AdminPortalPage {
   }
 
   private async waitForGetAnnouncement(id: string) {
-    console.log(`/admin-api/v1/announcements/${id}`);
     const getAnnouncementResponse = this.page.waitForResponse((res) => {
       return (
         res.status() === 200 &&
         res.url().includes(`/admin-api/v1/announcements/${id}`) &&
         res.request().method() === 'GET'
+      );
+    });
+
+    return getAnnouncementResponse;
+  }
+
+  private async waitForDeleteReponse() {
+    const getAnnouncementResponse = this.page.waitForResponse((res) => {
+      return (
+        res.status() === 201 &&
+        res.url().includes(`/admin-api/v1/announcements`) &&
+        res.request().method() === 'PATCH'
       );
     });
 
@@ -122,7 +180,7 @@ export class AnnouncementsPage extends AdminPortalPage {
     return outFormatter.format(dateInLocalTz);
   }
 
-  formatIsoDateTimeAsLocalTime(inDateStr: string) {
+  private formatIsoDateTimeAsLocalTime(inDateStr: string) {
     return this.formatDate(
       inDateStr,
       DateTimeFormatter.ISO_DATE_TIME,
