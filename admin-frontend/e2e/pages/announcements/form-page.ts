@@ -2,6 +2,8 @@ import { expect, Locator } from 'playwright/test';
 import { AdminPortalPage } from '../admin-portal-page';
 import { DateTimeFormatter, LocalDate } from '@js-joda/core';
 import { Locale } from '@js-joda/locale_en';
+import path from 'path';
+import { faker } from '@faker-js/faker';
 
 export enum FormMode {
   ADD,
@@ -19,6 +21,8 @@ export class FormPage extends AdminPortalPage {
   expiresOnInput: Locator;
   linkUrlInput: Locator;
   linkTextInput: Locator;
+  chooseFileButton: Locator;
+  fileDisplayNameInput: Locator;
 
   async setup() {
     await super.setup();
@@ -32,6 +36,12 @@ export class FormPage extends AdminPortalPage {
     this.expiresOnInput = await this.page.getByLabel('Expires On');
     this.linkUrlInput = await this.page.getByLabel('Link URL');
     this.linkTextInput = await this.page.getByLabel('Display URL As');
+    this.chooseFileButton = await this.page.getByRole('button', {
+      name: 'Choose file',
+    });
+    this.fileDisplayNameInput = await this.page.getByLabel(
+      'Display File Link As',
+    );
 
     await expect(this.titleInput).toBeVisible();
     await expect(this.descriptionInput).toBeVisible();
@@ -43,6 +53,8 @@ export class FormPage extends AdminPortalPage {
     await expect(this.expiresOnInput).toBeVisible();
     await expect(this.linkUrlInput).toBeVisible();
     await expect(this.linkTextInput).toBeVisible();
+    await expect(this.chooseFileButton).toBeVisible();
+    await expect(this.fileDisplayNameInput).toBeVisible();
   }
 
   async selectDraftOption() {
@@ -105,13 +117,17 @@ export class FormPage extends AdminPortalPage {
     await dateCell.click();
   }
 
+  async fillFileDisplayName(displayName: string) {
+    await this.fileDisplayNameInput.fill(displayName);
+  }
+
   async fillExpiresOn(date: LocalDate) {
     const dateCellLabel = date.format(
       DateTimeFormatter.ofPattern('EEEE d MMMM yyyy').withLocale(Locale.CANADA),
     );
     await this.expiresOnInput.click();
-    let dateCell = await this.page.getByLabel(dateCellLabel,);
-    
+    let dateCell = await this.page.getByLabel(dateCellLabel);
+
     while (!((await dateCell.all()).length > 0)) {
       const nextButton = await this.page.getByRole('button', {
         name: 'Next month',
@@ -123,7 +139,28 @@ export class FormPage extends AdminPortalPage {
     await dateCell.first().click();
   }
 
-  private async waitForSave() {
+  async chooseFile(valid: boolean = true) {
+
+    await this.fileDisplayNameInput.fill(faker.lorem.word(1));
+    const fileChooserPromise = this.page.waitForEvent('filechooser');
+    
+    const scanResponse = this.waitForClamavScan();
+    await this.chooseFileButton.click();
+    const fileChooser = await fileChooserPromise;
+    const fileName = valid ? 'valid.pdf' : 'invalid.com';
+    await fileChooser.setFiles(
+      path.resolve('e2e', 'assets', 'announcements', fileName),
+    );
+    const response = await scanResponse;
+    await response.json();
+  }
+
+  async expectFileInvalidError() {
+    const error = await this.page.getByText('File is invalid.');
+    await expect(error).toBeVisible();
+  }
+
+  private waitForSave() {
     const saveResponse = this.page.waitForResponse((res) => {
       return (
         [200, 201].includes(res.status()) &&
@@ -133,5 +170,11 @@ export class FormPage extends AdminPortalPage {
     });
 
     return saveResponse;
+  }
+
+  private waitForClamavScan() {
+    return this.page.waitForResponse((res) => {
+      return res.url().includes('/clamav-api');
+    });
   }
 }

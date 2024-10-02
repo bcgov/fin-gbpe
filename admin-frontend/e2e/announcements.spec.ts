@@ -40,6 +40,17 @@ test.describe('Announcements', () => {
       const addAnnouncementPage = await AddAnnouncementPage.visit(page);
 
       await addAnnouncementPage.fillDraftForm();
+      await addAnnouncementPage.chooseFile(false);
+      await addAnnouncementPage.expectFileInvalidError();
+      await addAnnouncementPage.chooseFile(true);
+      const announcement = await addAnnouncementPage.save('draft');
+      await expect(announcement.status).toBe('DRAFT');
+      await expect(announcement.title).toBeDefined();
+      await expect(announcement.description).toBeDefined();
+      await expect(announcement.active_on).toBeNull();
+      await expect(announcement.expires_on).toBeNull();
+      await announcementsPage.search(announcement.title);
+      await announcementsPage.expectTitleVisible(announcement.title);
     });
   });
 });
