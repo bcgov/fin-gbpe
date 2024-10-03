@@ -4,6 +4,7 @@ import { DateTimeFormatter, LocalDate } from '@js-joda/core';
 import { Locale } from '@js-joda/locale_en';
 import path from 'path';
 import { faker } from '@faker-js/faker';
+import { AnnouncementStatus } from '../../types';
 
 export enum FormMode {
   ADD,
@@ -89,8 +90,8 @@ export class FormPage extends AdminPortalPage {
     await this.cancelButton.click();
   }
 
-  async save(status: 'draft' | 'published') {
-    if (status === 'draft') {
+  async save(status: AnnouncementStatus) {
+    if (status === AnnouncementStatus.DRAFT) {
       await this.selectDraftOption();
     } else {
       await this.selectPublishedOption();
@@ -141,7 +142,7 @@ export class FormPage extends AdminPortalPage {
   }
 
   async chooseFile(valid: boolean = true) {
-    await this.fillFileDisplayName(faker.lorem.word(1));
+    await this.fillFileDisplayName(faker.lorem.words(1));
     await expect(this.chooseFileButton).toBeVisible();
 
     const fileChooserPromise = this.page.waitForEvent('filechooser');
@@ -160,6 +161,26 @@ export class FormPage extends AdminPortalPage {
   async expectFileInvalidError() {
     const error = await this.page.getByText('File is invalid.');
     await expect(error).toBeVisible();
+  }
+
+  async verifyPreview() {
+    const previewTitle = await this.page.getByText('Preview Announcement');
+    await expect(previewTitle).toBeVisible();
+
+    const title = await this.page.getByRole('heading', {
+      name: await this.titleInput.inputValue(),
+    });
+    await expect(title).toBeVisible();
+    const description = await this.page.getByText(await this.descriptionInput.inputValue());
+    await expect(description).toBeVisible();
+
+    const link = await this.page.getByRole('link', {
+      name: await this.linkTextInput.inputValue(),
+    });
+    await expect(link).toBeVisible();
+
+    const fileLink = await this.page.getByText(await this.fileDisplayNameInput.inputValue());
+    await expect(fileLink).toBeVisible();
   }
 
   private waitForSave() {

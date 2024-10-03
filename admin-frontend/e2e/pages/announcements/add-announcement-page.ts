@@ -2,6 +2,7 @@ import { LocalDate } from '@js-joda/core';
 import { PagePaths } from '../../utils';
 import { FormPage } from './form-page';
 import { faker } from '@faker-js/faker';
+import { AnnouncementStatus } from '../../types';
 
 export class AddAnnouncementPage extends FormPage {
   static path = PagePaths.ADD_ANNOUNCEMENTS;
@@ -18,7 +19,7 @@ export class AddAnnouncementPage extends FormPage {
   }
 
   async saveAnnouncementAsDraft() {
-    await this.save('draft');
+    await this.save(AnnouncementStatus.DRAFT);
     await this.page.waitForURL(PagePaths.ANNOUNCEMENTS);
   }
 
@@ -36,7 +37,6 @@ export class AddAnnouncementPage extends FormPage {
     await this.fillExpiresOn(expiresOn);
     await this.fillLinkUrl(faker.internet.url());
     await this.fillLinkTextInput(faker.lorem.words(3));
+    await this.chooseFile(true);
   }
-
-
 }

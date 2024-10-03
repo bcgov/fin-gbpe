@@ -3,6 +3,7 @@ import { PagePaths } from '../../utils';
 import { AdminPortalPage } from '../admin-portal-page';
 import { DateTimeFormatter, ZonedDateTime, ZoneId } from '@js-joda/core';
 import { Locale } from '@js-joda/locale_en';
+import { AnnouncementStatus } from '../../types';
 
 export class AnnouncementsPage extends AdminPortalPage {
   static path = PagePaths.ANNOUNCEMENTS;
@@ -73,9 +74,12 @@ export class AnnouncementsPage extends AdminPortalPage {
 
   async searchAndEdit(title: string) {
     const { items } = await this.search(title);
+    expect(items).toHaveLength(1);
     await this.expectTitleVisible(title);
     const actions = await this.page.getByRole('button', { name: 'Actions' });
-    await actions.click();
+    const actionsButton = await actions.first();
+    
+    await actionsButton.click();
     const getAnnouncementResponse = this.waitForGetAnnouncement(
       items[0].announcement_id,
     );
@@ -112,13 +116,12 @@ export class AnnouncementsPage extends AdminPortalPage {
     await searchResponseJson.json();
     await this.page.waitForURL(PagePaths.ANNOUNCEMENTS);
     await this.expectEmptySearchResults();
-    await this.reset();
   }
 
   async unpublishedAnnouncement(title: string) {
     await this.search(title);
     await this.expectTitleVisible(title);
-    await this.expectStatusVisible('PUBLISHED');
+    await this.expectStatusVisible(AnnouncementStatus.PUBLISHED);
     const actions = await (
       await this.page.getByRole('button', { name: 'Actions' })
     ).first();
@@ -142,7 +145,7 @@ export class AnnouncementsPage extends AdminPortalPage {
     await searchResponseJson.json();
     await this.page.waitForTimeout(2000);
     await this.expectTitleVisible(title);
-    await this.expectStatusVisible('DRAFT');
+    await this.expectStatusVisible(AnnouncementStatus.DRAFT);
     await this.reset();
   }
 
@@ -209,13 +212,5 @@ export class AnnouncementsPage extends AdminPortalPage {
     const localTz = ZoneId.systemDefault();
     const dateInLocalTz = date.withZoneSameInstant(localTz);
     return outFormatter.format(dateInLocalTz);
-  }
-
-  private formatIsoDateTimeAsLocalTime(inDateStr: string) {
-    return this.formatDate(
-      inDateStr,
-      DateTimeFormatter.ISO_DATE_TIME,
-      DateTimeFormatter.ofPattern('h:mm a').withLocale(Locale.CANADA),
-    );
   }
 }
