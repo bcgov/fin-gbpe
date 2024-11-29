@@ -21,7 +21,7 @@ jobs:
   image-promotions-to-test: # This is just for adding another tag to the image to reflect which docker tag is deployed to TEST.
     if: ${{ !github.event.inputs.is_hotfix }}
     name: Image Promotions to TEST
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       packages: write
     strategy:
