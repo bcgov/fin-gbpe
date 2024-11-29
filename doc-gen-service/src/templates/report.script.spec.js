@@ -4,7 +4,15 @@ import { docGenServicePrivate } from '../v1/services/doc-gen-service';
 let browser = null;
 beforeAll(async () => {
   browser = await puppeteer.launch({
-    args: ['--enable-logging', '--v=1', '--allow-file-access-from-files'],
+    args: [
+      '--enable-logging',
+      '--v=1',
+      '--allow-file-access-from-files',
+      '--no-sandbox', // --no-sandbox should only be used if there are absolutely no remote
+      // connections made and the source is fully trusted. In this case, the 'user data'
+      // is created by our test cases which will be safe, and this application doesn't make
+      // any remote connections to any other web service.
+    ],
     headless: 'new',
     dumpio: true,
   });
