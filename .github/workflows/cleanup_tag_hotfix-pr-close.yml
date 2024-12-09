@@ -31,7 +31,7 @@ jobs:
     name: Cleanup OpenShift
     env:
       release: pay-transparency-pr-${{ github.event.number }}
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Remove OpenShift artifacts
         run: |
@@ -44,7 +44,7 @@ jobs:
   create-hotfix-github-tag:
     if: startsWith(github.head_ref, 'hotfix/') && (!github.event.pull_request.head.repo.fork)
     name: Create Hotfix Tag
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -61,7 +61,7 @@ jobs:
           git push origin "$TAG"
   create-hotfix-docker-tag:
     if: startsWith(github.head_ref, 'hotfix/') && (!github.event.pull_request.head.repo.fork)
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     strategy:
       matrix:
         package: [ backend,

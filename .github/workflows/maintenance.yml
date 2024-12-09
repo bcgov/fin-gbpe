@@ -24,7 +24,7 @@ on:
 jobs:
     maintenance_on:
       name: Turn On Maintenance Mode
-      runs-on: ubuntu-22.04
+      runs-on: ubuntu-24.04
       environment: ${{ github.event.inputs.environment }}
       if: ${{ github.event.inputs.action == 'true' }}
       steps:
@@ -50,7 +50,7 @@ jobs:
     
     maintenance_off:
         name: Turn Off Maintenance Mode
-        runs-on: ubuntu-22.04
+        runs-on: ubuntu-24.04
         environment: ${{ github.event.inputs.environment }}
         if: ${{ github.event.inputs.action == 'false' }}
         steps:

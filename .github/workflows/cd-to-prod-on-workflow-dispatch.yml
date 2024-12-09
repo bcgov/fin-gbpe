@@ -20,7 +20,7 @@ jobs:
   image-promotions-to-prod: # This is just for adding another tag to the image to reflect which docker tag is deployed to PROD.
     if: ${{ !github.event.inputs.is_hotfix }}
     name: Image Promotions to PROD
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     permissions:
       packages: write
     strategy:
@@ -57,7 +57,7 @@ jobs:
   zap:
     name: ZAP Scan
     needs: [deploys]
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Penetration Test
         uses: zaproxy/action-full-scan@v0.12.0

@@ -9,7 +9,7 @@ jobs:
 
   zap:
     name: ZAP Scan
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       - name: Penetration Test
         uses: zaproxy/action-full-scan@v0.12.0
